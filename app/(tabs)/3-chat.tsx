@@ -1,32 +1,43 @@
-import { useRouter } from 'expo-router';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from "react-native";
+import { ChannelList } from "stream-chat-expo";
+import { chatUserId } from "../../chatConfig";
+import { useContext, useMemo } from 'react';
+import { Stack, useRouter } from 'expo-router';
+import { AppContext } from '../../contexts/AppContext';
+import { ChatWrapper } from "@/components/ChatWrapper";
 
+const filters = {
+  members: { $in: [chatUserId] },
+  type: "messaging",
+};
+const sort = { last_updated: -1 };
+const options = {
+  state: true,
+  watch: true,
+};
 
-export default function Home() {
-    const router = useRouter();
+export default function ChannelListScreen() {
 
-  const handleLogin = () => {
-    router.push('../auth/login');
-  };
+  const router = useRouter();
+  const { setChannel } = useContext(AppContext);
 
   return (
+    <ChatWrapper>
     <View style={styles.container}>
-      <Text >要开始聊天，请先登录</Text>
-      <Button title="登录" onPress={handleLogin} />
+      <ChannelList
+        
+        onSelect={(channel) => {
+          setChannel(channel);
+          router.push(`/channel/${channel.cid}`);
+        }}
+      />
     </View>
+    </ChatWrapper>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
   },
 });
