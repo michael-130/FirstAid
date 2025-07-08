@@ -28,7 +28,7 @@ export default function ChannelListScreen() {
         
         onSelect={(channel) => {
           setChannel(channel);
-          router.push(`/channel/${channel.cid}`);
+          router.push(`/chat/${channel.cid}`);
         }}
       />
     </View>
