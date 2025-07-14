@@ -1,6 +1,7 @@
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Button, Image, Modal, StyleSheet, Text, View } from 'react-native';
+import FloatingButton from '../../components/FloatingButton';
 import ProductList, { Product } from '../../components/ProductList';
 
 export type CartItem = {
@@ -57,7 +58,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       {/* <Text style={styles.title}>Product List</Text> */}
       <ProductList addToCart={addToCart} onProductPress={handleProductPress} />
-      <Button title="Go to Cart" onPress={() => router.push({ pathname: '../../cart_and_order_page/cart', params: { cartItems: JSON.stringify(cartItems) } })} />
+      <FloatingButton onPress={() => router.push({ pathname: '../../cart_and_order_page/cart', params: { cartItems: JSON.stringify(cartItems) } })} />
  
       <Modal
         animationType="slide"
