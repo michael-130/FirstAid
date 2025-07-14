@@ -14,6 +14,7 @@ import { AppProvider } from '../contexts/AppContext';
 export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    PoppinsBold: require('../assets/fonts/Poppins-Bold.ttf'),
   });
 
   if (!loaded) {
@@ -24,15 +25,22 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={styles.container}>
-          <AppProvider>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-              <Stack.Screen name="cart_and_order_page/order" options={{ title: "Order" }} />
-              <Stack.Screen name="auth/login" />
-                <Stack.Screen name="applyhome/Detail" /> {/* Just name, no component */}
-            </Stack>
-          </AppProvider>
+        <AppProvider>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+            <Stack.Screen name="cart_and_order_page/order" options={{ title: "Order" }} />
+            <Stack.Screen name="auth/login" options={{
+              headerTransparent: true,
+              headerTitle: '',
+              headerTintColor: '#5A321F',
+              headerStyle: {
+                backgroundColor: 'transparent',
+              },
+            }} />
+            <Stack.Screen name="applyhome/Detail" /> {/* Just name, no component */}
+          </Stack>
+        </AppProvider>
         <StatusBar style="dark" />
       </GestureHandlerRootView>
     </SafeAreaProvider>

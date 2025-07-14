@@ -1,9 +1,18 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Button, StyleSheet, Text, View } from 'react-native';
+
 
 export default function Home() {
+    const router = useRouter();
+
+  const handleLogin = () => {
+    router.push('../auth/login');
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome to Profile</Text>
+      <Text >要开始聊天，请先登录</Text>
+      <Button title="登录" onPress={handleLogin} />
     </View>
   );
 }
