@@ -1,16 +1,10 @@
 import { useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
-
-import type { StackNavigationProp } from '@react-navigation/stack';
-import type { RootStackParamList } from './types';
-
-type NavigationProp = StackNavigationProp<RootStackParamList>;
+import { router } from 'expo-router';
 
 export default function Index() {
-  const navigation = useNavigation<NavigationProp>();
-
   useEffect(() => {
-    navigation.navigate('(tabs)'); // no more TS error
+    // Navigate to the tabs layout route (this works if (tabs)/index.tsx exists)
+    router.replace('/(tabs)/1-home');
   }, []);
 
   return null;

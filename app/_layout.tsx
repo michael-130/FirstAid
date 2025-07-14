@@ -1,8 +1,8 @@
 import { useFonts } from 'expo-font';
-import { Slot, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
 import "react-native-gesture-handler";
+import 'react-native-reanimated';
 
 import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -17,17 +17,22 @@ export default function RootLayout() {
   });
 
   if (!loaded) {
+    // Async font loading only occurs in development.
     return null;
   }
 
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={styles.container}>
-        {/* <ChatWrapper> */}
           <AppProvider>
-             <Slot/>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+              <Stack.Screen name="cart_and_order_page/order" options={{ title: "Order" }} />
+              <Stack.Screen name="auth/login" />
+                <Stack.Screen name="applyhome/Detail" /> {/* Just name, no component */}
+            </Stack>
           </AppProvider>
-        {/* </ChatWrapper> */}
         <StatusBar style="dark" />
       </GestureHandlerRootView>
     </SafeAreaProvider>

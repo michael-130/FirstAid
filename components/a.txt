@@ -1,0 +1,51 @@
+
+categories : {
+        A:{
+            it will be downside of the appointment
+            alzhemir {
+                it will can be seen the description if the user press
+                  Description:
+                   Adress
+                   时间：
+                   Appointment: bool
+                     }
+            Amnesia {
+                    ...}
+          }
+        B:{   
+            Cancer {
+                   Description:
+                   Adress
+                   时间：
+                   Appointment: bool
+            }
+        }
+    }
+}
+
+User :{
+    UserA :{
+        Appointment :{
+            A:{
+                alzhemir :{
+                    if appointment true or false it will display card upside of the categories and downside of the search categories
+                    Appointment : true
+                }
+            }
+        }
+        Recommended :{
+            default  , when the person click in the the categoris 选项  the recommended card will have the a sickness and will display bawahnya categories
+
+        }
+        authentication : {
+            UserA :{
+                  number： {any}
+                  no need for now        
+            }
+        }
+    User B:{
+        
+    }
+
+    }
+}
