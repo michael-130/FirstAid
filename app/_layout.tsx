@@ -1,14 +1,13 @@
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
 import "react-native-gesture-handler";
+import 'react-native-reanimated';
 
 import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { ChatWrapper } from '../components/ChatWrapper';
 import { AppProvider } from '../contexts/AppContext';
 
 
@@ -25,7 +24,6 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={styles.container}>
-        {/* <ChatWrapper> */}
           <AppProvider>
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -34,7 +32,6 @@ export default function RootLayout() {
               <Stack.Screen name="auth/login" />
             </Stack>
           </AppProvider>
-        {/* </ChatWrapper> */}
         <StatusBar style="dark" />
       </GestureHandlerRootView>
     </SafeAreaProvider>

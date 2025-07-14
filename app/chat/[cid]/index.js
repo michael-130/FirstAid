@@ -1,9 +1,10 @@
-import React, { useContext, useEffect } from "react";
-import { SafeAreaView, Text, View } from "react-native";
-import { Channel, MessageInput, MessageList } from "stream-chat-expo";
-import { Stack } from "expo-router";
-import { AppContext } from "../../../contexts/AppContext";
 import { useHeaderHeight } from "@react-navigation/elements";
+import { Stack } from "expo-router";
+import { useContext } from "react";
+import { SafeAreaView, Text } from "react-native";
+import { Channel, MessageInput, MessageList } from "stream-chat-expo";
+import { ChatWrapper } from "../../../components/ChatWrapper";
+import { AppContext } from "../../../contexts/AppContext";
 
 export default function ChannelScreen() {
   const { channel } = useContext(AppContext);
@@ -19,11 +20,13 @@ export default function ChannelScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Stack.Screen options={{ title: "Channel Screen" }} />
-      <Channel channel={channel} keyboardVerticalOffset={headerHeight}>
-        <MessageList />
-        <MessageInput />
-      </Channel>
+      <ChatWrapper>
+        <Stack.Screen options={{ title: "Channel Screen" }} />
+        <Channel channel={channel} keyboardVerticalOffset={headerHeight}>
+          <MessageList />
+          <MessageInput />
+        </Channel>
+      </ChatWrapper>
     </SafeAreaView>
   );
 }
