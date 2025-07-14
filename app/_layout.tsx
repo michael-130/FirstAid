@@ -1,6 +1,15 @@
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Slot, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import 'react-native-reanimated';
+import "react-native-gesture-handler";
+
+import { StyleSheet } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+
+import { AppProvider } from '../contexts/AppContext';
+
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -12,14 +21,21 @@ export default function RootLayout() {
   }
 
   return (
-    <>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-        <Stack.Screen name="cart_and_order_page/order" options={{ title: "Order" }} />
-        <Stack.Screen name="applyhome/Detail" /> {/* Just name, no component */}
-      </Stack>
-      <StatusBar style="auto" />
-    </>
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={styles.container}>
+        {/* <ChatWrapper> */}
+          <AppProvider>
+             <Slot/>
+          </AppProvider>
+        {/* </ChatWrapper> */}
+        <StatusBar style="dark" />
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
