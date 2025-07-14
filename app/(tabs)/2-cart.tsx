@@ -1,9 +1,7 @@
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Button, Image, Modal, StyleSheet, Text, View } from 'react-native';
 import ProductList, { Product } from '../../components/ProductList';
-import { Link } from '@react-navigation/native';
-
 
 export type CartItem = {
   id: string;
@@ -50,8 +48,14 @@ export default function HomeScreen() {
   };
 
   return (
+    <>
+    <Stack.Screen
+        options={{
+          headerTitle: 'Product List',
+        }}
+      />
     <View style={styles.container}>
-      <Text style={styles.title}>Product List</Text>
+      {/* <Text style={styles.title}>Product List</Text> */}
       <ProductList addToCart={addToCart} onProductPress={handleProductPress} />
       <Button title="Go to Cart" onPress={() => router.push({ pathname: '../../cart_and_order_page/cart', params: { cartItems: JSON.stringify(cartItems) } })} />
  
@@ -85,6 +89,7 @@ export default function HomeScreen() {
         </View>
       </Modal>
     </View>
+    </>
   );
 }
 

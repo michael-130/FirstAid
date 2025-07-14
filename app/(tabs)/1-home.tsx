@@ -1,25 +1,25 @@
 // HomeScreen.tsx
 import React, { useEffect, useState } from 'react';
 import {
-  View,
-  ScrollView,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import AppointmentCard from '../../data/care_order/AppointmentCard';
 import CategoryCard from '../../data/care_order/CategoryCard';
 
-import CategoryFilter from '../../data/care_order/categoryfilter';
-import SicknessInfo, { CategoryMap, User } from '@/data/care_order/types_home';
 import { fetchCareOrderData } from '@/data/care_order/firebase';
+import SicknessInfo, { CategoryMap, RootStackParamList, User } from '@/data/care_order/types_home';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '@/data/care_order/types_home';
-import { RefreshControl } from 'react-native';
+import { Stack } from 'expo-router';
 import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from 'firebase/auth';
+import { RefreshControl } from 'react-native';
+import CategoryFilter from '../../data/care_order/categoryfilter';
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 const HomeScreen = () => {
@@ -112,7 +112,13 @@ const onRefresh = async () => {
   };
 
   return (
- <><View style={styles.statusBar}>
+ <>
+ <Stack.Screen
+        options={{
+          headerTitle: '🏠 Home',
+        }}
+      />
+ <View style={styles.statusBar}>
       {authUser ? (
         <>
           <Text style={styles.statusText}>
@@ -133,7 +139,7 @@ const onRefresh = async () => {
         </>
       )}
     </View><ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        <Text style={styles.header}>🏠 Home</Text>
+        {/* <Text style={styles.header}>🏠 Home</Text> */}
 
         {/* Appointments */}
         <View style={styles.section}>
@@ -211,7 +217,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 22,
     fontWeight: '600',
-    marginBottom: 12,
+    marginVertical: 12,
     color: '#1E90FF',
   },
   statusBar: {
