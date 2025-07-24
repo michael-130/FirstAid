@@ -2,7 +2,7 @@
 // Not a big secret
 // Just for development purposes
 
-export const chatApiKey = "dz5f4d5kzrue";
-export const chatUserId = "still-sun-4";
-export const chatUserName = "still";
-export const chatUserToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoic3RpbGwtc3VuLTQiLCJleHAiOjE3NTI0OTIwMDV9.FGWcbssd7iMaJjZS6tmraSxQcMQUYbD20UVWnVKSyJU";
+export const chatApiKey = "vr2zkr2dchjg";
+export const chatUserId = "yeo";
+export const chatUserName = "yepssh";
+export const chatUserToken = "u5aemkk74r99padpedv8caqwn5ne7u6bsz2c34b3rcrq249btws3cgwrbvnabda6";

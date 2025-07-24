@@ -13,11 +13,15 @@ export type CategoryMap = {                // fixed typo from CatergoryMap → C
 
 /*const CategoryMap = {
   "A": {
-    "Cold" :Sicness Info(object type) a box that holds related data together using key value pairs
+    "Cold" :{  description: Very cold     ;
+  address: harbin ;
+  time: 1232;
+  appointment: True;}
   },
   "B": {
     "Fever": {
-      appointment: true
+      description : is not good 
+      Address  : is ada nout
     }
   }
 };

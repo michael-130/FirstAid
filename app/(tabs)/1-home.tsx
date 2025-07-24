@@ -1,48 +1,54 @@
-// HomeScreen.tsx
 import React, { useEffect, useState } from 'react';
 import {
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
   ActivityIndicator,
   Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+  StatusBar,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from '@expo/vector-icons';
 import AppointmentCard from '../../data/care_order/AppointmentCard';
 import CategoryCard from '../../data/care_order/CategoryCard';
-
+import CategoryFilter from '../../data/care_order/categoryfilter';
+import SicknessInfo, { CategoryMap, User } from '@/data/care_order/types_home';
 import { fetchCareOrderData } from '@/data/care_order/firebase';
-import SicknessInfo, { CategoryMap, RootStackParamList, User } from '@/data/care_order/types_home';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Stack } from 'expo-router';
-import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from 'firebase/auth';
+import { RootStackParamList } from '@/data/care_order/types_home';
 import { RefreshControl } from 'react-native';
-import CategoryFilter from '../../data/care_order/categoryfilter';
+import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from 'firebase/auth';
+
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 const HomeScreen = () => {
   const [categories, setCategories] = useState<CategoryMap>({});
   const [userData, setUserData] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedCategory, setSelectedCategory] = useState<string>('全部');
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation<NavigationProp>();
-const onRefresh = async () => {
-  console.log('🔄 User triggered refresh...');
-  setRefreshing(true);
-  try {
-    const { categories, userData } = await fetchCareOrderData();
-    setCategories(categories);
-    setUserData(userData);
-    console.log('✅ Data refreshed');
-  } catch (e) {
-    console.error('🔥 Error refreshing data:', e);
-  } finally {
-    setRefreshing(false);
-  }
-};
+  const [authUser, setAuthUser] = useState<{ uid: string; isAnonymous: boolean } | null>(null);
+  const auth = getAuth();
+
+  const onRefresh = async () => {
+    console.log('🔄 User triggered refresh...');
+    setRefreshing(true);
+    try {
+      const { categories, userData } = await fetchCareOrderData();
+      setCategories(categories);
+      setUserData(userData);
+      console.log('✅ Data refreshed');
+    } catch (e) {
+      console.error('🔥 Error refreshing data:', e);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       console.log('🔄 Starting to load care order data...');
@@ -61,8 +67,6 @@ const onRefresh = async () => {
 
     loadData();
   }, []);
-  const [authUser, setAuthUser] = useState<{ uid: string; isAnonymous: boolean } | null>(null);
-  const auth = getAuth();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -74,20 +78,23 @@ const onRefresh = async () => {
     });
     return unsubscribe;
   }, []);
+
   if (loading) {
     console.log('⏳ Still loading, showing spinner');
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2E7D5A" />
+        <Text style={styles.loadingText}>正在加载护理服务...</Text>
       </View>
     );
   }
+
   const handleLoginGuest = async () => {
     try {
       await signInAnonymously(auth);
-      Alert.alert('Logged in as guest');
+      Alert.alert('登录成功', '已以访客身份登录');
     } catch (e) {
-      Alert.alert('Failed to login as guest');
+      Alert.alert('登录失败', '访客登录失败，请重试');
       console.error(e);
     }
   };
@@ -95,9 +102,9 @@ const onRefresh = async () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      Alert.alert('Logged out');
+      Alert.alert('退出成功', '已成功退出登录');
     } catch (e) {
-      Alert.alert('Failed to logout');
+      Alert.alert('退出失败', '退出登录失败，请重试');
       console.error(e);
     }
   };
@@ -112,137 +119,314 @@ const onRefresh = async () => {
   };
 
   return (
- <>
- <Stack.Screen
-        options={{
-          headerTitle: '🏠 Home',
-        }}
-      />
- <View style={styles.statusBar}>
-      {authUser ? (
-        <>
-          <Text style={styles.statusText}>
-            {authUser.isAnonymous
-              ? `Logged in as Guest (${authUser.uid})`
-              : `Logged in as User (${authUser.uid})`}
-          </Text>
-          <TouchableOpacity onPress={handleLogout}>
-            <Text style={styles.actionText}>Logout</Text>
+    <>
+      <StatusBar barStyle="light-content" backgroundColor="#2E7D5A" />
+      
+      {/* Header with gradient */}
+      <LinearGradient
+        colors={['#2E7D5A', '#4A9B6E']}
+        style={styles.header}
+      >
+        <View style={styles.headerContent}>
+          <View style={styles.headerTop}>
+            <View>
+              <Text style={styles.greeting}>您好！</Text>
+              <Text style={styles.welcomeText}>欢迎使用护理助手</Text>
+            </View>
+            <TouchableOpacity style={styles.notificationButton}>
+              <MaterialIcons name="notifications" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+          
+          {/* Auth Status */}
+          <View style={styles.authStatus}>
+            {authUser ? (
+              <View style={styles.authContainer}>
+                <MaterialIcons name="account-circle" size={20} color="#db2626ff" />
+                <Text style={styles.authText}>
+                  {authUser.isAnonymous ? '访客用户' : '已登录用户'}
+                </Text>
+                <TouchableOpacity onPress={handleLogout} style={styles.authButton}>
+                  <Text style={styles.authButtonText}>退出</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.authContainer}>
+                <MaterialIcons name="account-circle" size={20} color="#ff0000ff" />
+                <Text style={styles.authText}>未登录</Text>
+                <TouchableOpacity onPress={handleLoginGuest} style={styles.authButton}>
+                  <Text style={styles.authButtonText}>访客登录</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </View>
+      </LinearGradient>
+
+      <ScrollView 
+        style={styles.container} 
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh}
+            colors={['#2E7D5A']}
+            tintColor="#2E7D5A"
+          />
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Quick Actions */}
+        <View style={styles.quickActions}>
+          <TouchableOpacity style={styles.quickActionItem}>
+            <View style={styles.quickActionIcon}>
+              <MaterialIcons name="emergency" size={24} color="#FF6B6B" />
+            </View>
+            <Text style={styles.quickActionText}>紧急护理</Text>
           </TouchableOpacity>
-        </>
-      ) : (
-        <>
-          <Text style={styles.statusText}>Not logged in</Text>
-          <TouchableOpacity onPress={handleLoginGuest}>
-            <Text style={styles.actionText}>Login as Guest</Text>
+          <TouchableOpacity style={styles.quickActionItem}>
+            <View style={styles.quickActionIcon}>
+              <MaterialIcons name="schedule" size={24} color="#4ECDC4" />
+            </View>
+            <Text style={styles.quickActionText}>预约服务</Text>
           </TouchableOpacity>
-        </>
-      )}
-    </View><ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        {/* <Text style={styles.header}>🏠 Home</Text> */}
+          <TouchableOpacity style={styles.quickActionItem}>
+            <View style={styles.quickActionIcon}>
+              <MaterialIcons name="local-hospital" size={24} color="#45B7D1" />
+            </View>
+            <Text style={styles.quickActionText}>健康咨询</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickActionItem}>
+            <View style={styles.quickActionIcon}>
+              <MaterialIcons name="medication" size={24} color="#F7B731" />
+            </View>
+            <Text style={styles.quickActionText}>用药提醒</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Appointments */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your Appointments</Text>
-          {Object.entries(userAppointments).map(([catKey, illnessMap]) => Object.entries(illnessMap).map(([illnessName, info]) => {
-            const illnessData = categories[catKey]?.[illnessName];
-            if (info.appointment && illnessData) {
-              console.log(`Rendering appointment card for ${illnessName} under category ${catKey}`);
-              return (
-                <AppointmentCard
-                  key={`appointment-${illnessName}`}
-                  illnessName={illnessName}
-                  data={illnessData} />
-              );
-            }
-            return null;
-          })
+          <View style={styles.sectionHeader}>
+            <MaterialIcons name="event" size={24} color="#2E7D5A" />
+            <Text style={styles.sectionTitle}>我的预约</Text>
+          </View>
+          {Object.entries(userAppointments).length === 0 ? (
+            <View style={styles.emptyState}>
+              <MaterialIcons name="event-available" size={48} color="#C7C7CC" />
+              <Text style={styles.emptyStateText}>暂无预约</Text>
+              <Text style={styles.emptyStateSubtext}>点击下方服务卡片预约护理服务</Text>
+            </View>
+          ) : (
+            Object.entries(userAppointments).map(([catKey, illnessMap]) => 
+              Object.entries(illnessMap).map(([illnessName, info]) => {
+                const illnessData = categories[catKey]?.[illnessName];
+                if (info.appointment && illnessData) {
+                  console.log(`Rendering appointment card for ${illnessName} under category ${catKey}`);
+                  return (
+                    <AppointmentCard
+                      key={`appointment-${illnessName}`}
+                      illnessName={illnessName}
+                      data={illnessData}
+                    />
+                  );
+                }
+                return null;
+              })
+            )
           )}
         </View>
 
         {/* Category Filter */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🦴 Category Filter</Text>
-          <CategoryFilter selected={selectedCategory} onSelect={(cat) => {
-            console.log('Category selected:', cat);
-            setSelectedCategory(cat);
-          } } />
+          <View style={styles.sectionHeader}>
+            <MaterialIcons name="category" size={24} color="#2E7D5A" />
+            <Text style={styles.sectionTitle}>护理分类</Text>
+          </View>
+          <CategoryFilter 
+            selected={selectedCategory} 
+            onSelect={(cat) => {
+              console.log('Category selected:', cat);
+              setSelectedCategory(cat);
+            }} 
+          />
         </View>
 
-        {/* Recommended */}
+        {/* Recommended Services */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📌 Recommended</Text>
+          <View style={styles.sectionHeader}>
+            <MaterialIcons name="recommend" size={24} color="#2E7D5A" />
+            <Text style={styles.sectionTitle}>推荐服务</Text>
+          </View>
           {Object.entries(categories)
-            .filter(([catKey]) => selectedCategory === 'All' || selectedCategory === catKey)
-            .flatMap(([catKey, illnesses]) => Object.entries(illnesses).map(([illnessName, data]) => (
-              <TouchableOpacity
-              >
-                <CategoryCard
-                  key={`${catKey}-${illnessName}`}
-                  illnessName={illnessName}
-                  data={data}
-                  onPress={() => {
-                    console.log('Pressed CategoryCard: navigating & setting category');
-                    setSelectedCategory(catKey);
-                    navigation.navigate('applyhome/Detail', { catKey, illnessName, data });
-
-                  } } />
-              </TouchableOpacity>
-            ))
+            .filter(([catKey]) => selectedCategory === '全部' || selectedCategory === catKey)
+            .flatMap(([catKey, illnesses]) => 
+              Object.entries(illnesses).map(([illnessName, data]) => (
+                <TouchableOpacity key={`${catKey}-${illnessName}`}>
+                  <CategoryCard
+                    illnessName={illnessName}
+                    data={data}
+                    onPress={() => {
+                      console.log('Pressed CategoryCard: navigating & setting category');
+                      setSelectedCategory(catKey);
+                      navigation.navigate('applyhome/Detail', { catKey, illnessName, data });
+                    }}
+                  />
+                </TouchableOpacity>
+              ))
             )}
         </View>
-      </ScrollView></>
+
+        {/* Bottom spacing */}
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#F9F9F9',
+    flex: 1,
+    backgroundColor: '#F8F9FA',
   },
-  center: {
+  loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#2E7D5A',
+    fontWeight: '500',
   },
   header: {
-    fontSize: 28,
-    fontWeight: '700',
-    margin: 16,
-    color: '#333',
+    paddingTop: 60,
+    paddingBottom: 24,
+    paddingHorizontal: 20,
+    
+    
   },
-  section: {
-    marginBottom: 24,
-    paddingHorizontal: 16,
+  headerContent: {
+    flex: 0,
   },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: '600',
-    marginVertical: 12,
-    color: '#1E90FF',
-  },
-  statusBar: {
-    backgroundColor: '#007AFF',
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  greeting: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    opacity: 0.9,
+  },
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginTop: 4,
+  },
+  notificationButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  statusText: {
-    color: 'white',
-    fontSize: 14,
+  authStatus: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 12,
+    padding: 12,
   },
-  actionText: {
-    color: 'white',
+  authContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  authText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '500',
+    flex: 1,
+    marginLeft: 8,
+  },
+  authButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  authButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  quickActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+  },
+  quickActionItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  quickActionIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  quickActionText: {
+    fontSize: 12,
+    color: '#333333',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
-    fontSize: 14,
-    textDecorationLine: 'underline',
+    color: '#2E7D5A',
+    marginLeft: 8,
   },
-
-
-
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#8E8E93',
+    fontWeight: '500',
+    marginTop: 12,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#C7C7CC',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  bottomSpacing: {
+    height: 20,
+  },
 });
-
-
 
 export default HomeScreen;
