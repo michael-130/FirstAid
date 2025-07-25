@@ -1,23 +1,25 @@
+import NewsCard from "@/components/NewsCard";
+import { COLORS, FONTS } from '@/utils/constants';
+import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { Search } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
-  StyleSheet,
-  View,
-  Text,
-  SafeAreaView,
   ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
   TouchableOpacity,
-  FlatList,
+  View
 } from 'react-native';
-import { Search, Bell } from 'lucide-react-native';
-import { COLORS, FONTS } from '@/utils/constants';
 import { articles } from '../../utils/data';
-import NewsCard from "@/components/NewsCard";
-import { useRouter } from 'expo-router';
-type CategoryFilter = 
-  'All' 
-  | 'Mental Support' 
-  | 'Care Techniques' 
-  | 'Cognitive Care' 
+
+type CategoryFilter =
+  'All'
+  | 'Mental Support'
+  | 'Care Techniques'
+  | 'Cognitive Care'
   | 'Interpersonal Skills';
 
 export default function NewsScreen() {
@@ -39,64 +41,75 @@ export default function NewsScreen() {
   const featuredArticle = articles[0];
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <>
+      <StatusBar barStyle="light-content" backgroundColor="#2E7D5A" />
+      <LinearGradient
+        colors={['#2E7D5A', '#4A9B6E']}
+        style={styles.header}
+      >
+        <View style={styles.headerContent}>
+          <View style={styles.headerTop}>
+            <View>
+              {/* <Text style={styles.greeting}>您好！</Text> */}
+              <Text style={styles.welcomeText}>健康咨询</Text>
+            </View>
+            <TouchableOpacity style={styles.notificationButton}>
+              <MaterialIcons name="notifications" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.searchContainer}>
+            <TouchableOpacity style={styles.searchBar}>
+              <Search size={20} color={COLORS.gray} />
+              <Text style={styles.searchText}>
+                Search articles...
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.categoriesContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoriesList}
+            >
+              {categories.map((category) => (
+                <TouchableOpacity
+                  key={category}
+                  style={[
+                    styles.categoryButton,
+                    activeCategory === category && styles.activeCategoryButton,
+                  ]}
+                  onPress={() => setActiveCategory(category)}
+                >
+                  <Text
+                    style={[
+                      styles.categoryText,
+                      activeCategory === category && styles.activeCategoryText,
+                    ]}
+                  >
+                    {category}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </LinearGradient>
+      {/* <SafeAreaView style={styles.safeArea}> */}
       <ScrollView
         style={styles.container}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Wellness News</Text>
-          <TouchableOpacity style={styles.iconButton}>
-            <Bell size={24} color={COLORS.darkText} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.searchContainer}>
-          <TouchableOpacity style={styles.searchBar}>
-            <Search size={20} color={COLORS.gray} />
-            <Text style={styles.searchText}>
-              Search articles...
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.categoriesContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoriesList}
-          >
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={category}
-                style={[
-                  styles.categoryButton,
-                  activeCategory === category && styles.activeCategoryButton,
-                ]}
-                onPress={() => setActiveCategory(category)}
-              >
-                <Text
-                  style={[
-                    styles.categoryText,
-                    activeCategory === category && styles.activeCategoryText,
-                  ]}
-                >
-                  {category}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
         {featuredArticle && (
           <View style={styles.featuredSection}>
             <Text style={styles.sectionTitle}>Featured Article</Text>
             <TouchableOpacity
               style={styles.featuredCard}
-          onPress={() => router.push({
-  pathname: '/news/[id]',
-  params: { id: featuredArticle.id },
-})}
+              onPress={() => router.push({
+                pathname: '/news/[id]',
+                params: { id: featuredArticle.id },
+              })}
               activeOpacity={0.9}
             >
               <Image
@@ -128,12 +141,13 @@ export default function NewsScreen() {
           ))}
         </View>
       </ScrollView>
-    </SafeAreaView>
+      {/* </SafeAreaView> */}
+    </>
   );
 }
 
-import { Image } from 'react-native';
 import { format } from 'date-fns';
+import { Image } from 'react-native';
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -144,13 +158,13 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 16,
-  },
+  // header: {
+  //   flexDirection: 'row',
+  //   justifyContent: 'space-between',
+  //   alignItems: 'center',
+  //   marginTop: 8,
+  //   marginBottom: 16,
+  // },
   title: {
     fontFamily: FONTS.poppinsSemiBold,
     fontSize: 24,
@@ -240,12 +254,12 @@ const styles = StyleSheet.create({
     right: 0,
     height: '70%',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    backgroundGradient: 'linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent)',
+    // backgroundGradient: 'linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent)',
     justifyContent: 'flex-end',
     padding: 16,
   },
   featuredContent: {
-    
+
   },
   featuredCategory: {
     fontFamily: FONTS.interSemiBold,
@@ -272,4 +286,39 @@ const styles = StyleSheet.create({
   latestSection: {
     marginBottom: 24,
   },
+  header: {
+    paddingTop: 60,
+    paddingBottom: 24,
+    paddingHorizontal: 20,
+
+
+  },
+  headerContent: {
+    flex: 0,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  greeting: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    opacity: 0.9,
+  },
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginTop: 4,
+  },
+  notificationButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
 });
