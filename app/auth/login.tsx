@@ -1,16 +1,25 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import {
+  PhoneAuthProvider,
+  signInWithCredential
+} from 'firebase/auth';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  StatusBar,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { auth, firebaseConfig } from '../../firebase';
+
 
 export default function LoginScreen() {
   const [phone, setPhone] = useState('');
@@ -18,11 +27,90 @@ export default function LoginScreen() {
   const [phoneFocused, setPhoneFocused] = useState(false);
   const [codeFocused, setCodeFocused] = useState(false);
 
+  const [verificationId, setVerificationId] = useState(null);
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  const recaptchaVerifier = useRef(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    let interval;
+    if (countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [countdown]);
+
+  // 发送验证码
+  const sendVerificationCode = async () => {
+    if (!phone) {
+      Alert.alert("错误", "请输入有效的手机号码。");
+      return;
+    }
+    setIsSendingCode(true);
+    try {
+      const provider = new PhoneAuthProvider(auth);
+      const phoneNumber = `+86${phone}`;
+
+      const verId = await provider.verifyPhoneNumber(
+        phoneNumber,
+        recaptchaVerifier.current
+      );
+      setVerificationId(verId);
+      Alert.alert("成功", "验证码已发送至您的手机。");
+      setCountdown(60);
+    } catch (error) {
+      console.error("发送验证码出错:", error);
+      Alert.alert("错误", `发送验证码失败：${error.message}`);
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
+  // 确认验证码并登录
+  const confirmCode = async () => {
+    if (!code || code.length !== 6) {
+      Alert.alert("错误", "请输入6位验证码。");
+      return;
+    }
+    if (!verificationId) {
+      Alert.alert("错误", "请先获取验证码。");
+      return;
+    }
+    setIsVerifyingCode(true);
+    try {
+      const credential = PhoneAuthProvider.credential(
+        verificationId,
+        code
+      );
+      await signInWithCredential(auth, credential);
+      router.back();
+    } catch (error) {
+      console.error("验证码验证失败:", error);
+      Alert.alert("错误", `验证码不正确：${error.message}`);
+    } finally {
+      setIsVerifyingCode(false);
+    }
+  };
+
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor="#2E7D5A" />
-      <KeyboardAvoidingView 
-        style={styles.container} 
+
+      <FirebaseRecaptchaVerifierModal
+        ref={recaptchaVerifier}
+        firebaseConfig={firebaseConfig}
+        title="验证身份"
+        cancelLabel="取消"
+      />
+
+
+      <KeyboardAvoidingView
+        style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* Header Background */}
@@ -71,6 +159,7 @@ export default function LoginScreen() {
                   keyboardType="phone-pad"
                   placeholder="请输入11位手机号"
                   placeholderTextColor="#C7C7CC"
+                // maxLength={11}
                 />
               </View>
             </View>
@@ -101,22 +190,33 @@ export default function LoginScreen() {
                   keyboardType="number-pad"
                   placeholder="请输入验证码"
                   placeholderTextColor="#C7C7CC"
+                  maxLength={6}
                 />
               </View>
-              <TouchableOpacity style={styles.codeButton}>
-                <Text style={styles.codeButtonText}>获取验证码</Text>
+              <TouchableOpacity
+                style={[styles.codeButton, (isSendingCode || countdown > 0) && styles.codeButtonDisabled]}
+                onPress={sendVerificationCode}
+                disabled={isSendingCode || countdown > 0}
+              >
+                <Text style={styles.codeButtonText}>
+                  {isSendingCode ? '发送中...' : (countdown > 0 ? `${countdown}s` : '获取验证码')}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Login Button */}
-          <TouchableOpacity style={styles.loginButton}>
+          <TouchableOpacity
+            style={styles.loginButton}
+            onPress={confirmCode}
+            disabled={isVerifyingCode}
+          >
             <LinearGradient
-              colors={['#2E7D5A', '#4A9B6E']}
+              colors={isVerifyingCode ? ['#AAAAAA', '#BBBBBB'] : ['#2E7D5A', '#4A9B6E']}
               style={styles.loginGradient}
             >
               <MaterialIcons name="login" size={20} color="#FFFFFF" />
-              <Text style={styles.loginButtonText}>登录</Text>
+              <Text style={styles.loginButtonText}>{isVerifyingCode ? '登录中...' : '登录'}</Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -251,6 +351,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 12,
+  },
+  codeButtonDisabled: {
+    backgroundColor: '#A5A5A5',
   },
   codeButtonText: {
     color: '#FFFFFF',

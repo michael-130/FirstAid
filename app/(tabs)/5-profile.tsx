@@ -1,15 +1,17 @@
-import { useRouter } from 'expo-router';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  TouchableOpacity, 
-  StatusBar,
-  ScrollView,
-  Image 
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import {
+  Image,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { auth } from '../../firebase';
 
 const menuItems = [
   { icon: 'person', title: '个人信息', subtitle: '管理您的个人资料', route: '/profile/info' },
@@ -23,6 +25,18 @@ const menuItems = [
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+      setUser(firebaseUser);
+      // if (firebaseUser) {
+      //   console.log('User info:', firebaseUser);
+      // }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleLogin = () => {
     router.push('../auth/login');
@@ -31,7 +45,7 @@ export default function ProfileScreen() {
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor="#2E7D5A" />
-      
+
       {/* Header with Profile Info */}
       <LinearGradient
         colors={['#2E7D5A', '#4A9B6E']}
@@ -39,21 +53,30 @@ export default function ProfileScreen() {
       >
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
-            <Image 
+            <Image
               source={{ uri: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150' }}
               style={styles.avatar}
             />
             <View style={styles.onlineIndicator} />
           </View>
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>请登录</Text>
-            <Text style={styles.profileSubtitle}>访问完整的护理服务</Text>
+            {user ? (
+              <>
+                <Text style={styles.profileName}>{user.phoneNumber}</Text>
+                <Text style={styles.profileSubtitle}>欢迎回来！</Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.profileName}>请登录</Text>
+                <Text style={styles.profileSubtitle}>访问完整的护理服务</Text>
+              </>
+            )}
           </View>
           <TouchableOpacity style={styles.editButton}>
             <MaterialIcons name="edit" size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
-        
+
         {/* Stats */}
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
