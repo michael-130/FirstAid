@@ -1,22 +1,41 @@
-// import React from "react";
-import { Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Chat, OverlayProvider, useCreateChatClient } from 'stream-chat-expo';
-import { chatApiKey, chatUserId, chatUserName, chatUserToken } from '../chatConfig';
+import { useEffect, useState } from 'react';
+import { Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StreamChat } from 'stream-chat';
+import { Chat, OverlayProvider } from 'stream-chat-expo';
 
-const user = {
-  id: chatUserId,
-  name: chatUserName,
-};
+import { getChatConfig } from '../chatConfig';
 
 export const ChatWrapper = ({ children }) => {
-  const chatClient = useCreateChatClient({
-    apiKey: chatApiKey,
-    userData: user,
-    tokenOrProvider: chatUserToken,
-  });
+  const [client, setClient] = useState(null);
 
-  if (!chatClient) {
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const { chatApiKey, chatUserId, chatUserName, chatUserToken } =
+          await getChatConfig();
+
+        const chatClient = StreamChat.getInstance(chatApiKey);
+
+        await chatClient.connectUser(
+          {
+            id: chatUserId,
+            name: chatUserName,
+          },
+          chatUserToken
+        );
+
+        console.log('✅ Connected to Stream as', chatUserId);
+        setClient(chatClient);
+      } catch (err) {
+        console.error('❌ Stream connection error:', err);
+      }
+    };
+
+    init();
+  }, []);
+
+  if (!client) {
     return (
       <SafeAreaView>
         <Text>Loading chat ...</Text>
@@ -26,7 +45,7 @@ export const ChatWrapper = ({ children }) => {
 
   return (
     <OverlayProvider>
-      <Chat client={chatClient}>{children}</Chat>
+      <Chat client={client}>{children}</Chat>
     </OverlayProvider>
   );
 };
