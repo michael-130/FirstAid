@@ -11,16 +11,18 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
+  Image
 } from 'react-native';
+import { format } from 'date-fns';
 import { articles } from '../../utils/data';
 
 type CategoryFilter =
   'All'
-  | 'Mental Support'
-  | 'Care Techniques'
-  | 'Cognitive Care'
-  | 'Interpersonal Skills';
+  | '照护者'
+  | '护理技巧'
+  | '认知护理'
+  | '人际技能';
 
 export default function NewsScreen() {
   const router = useRouter();
@@ -28,10 +30,10 @@ export default function NewsScreen() {
 
   const categories: CategoryFilter[] = [
     'All',
-    'Mental Support',
-    'Care Techniques',
-    'Cognitive Care',
-    'Interpersonal Skills',
+    '照护者',
+    '护理技巧',
+    '认知护理',
+    '人际技能',
   ];
 
   const filteredArticles = activeCategory === 'All'
@@ -50,8 +52,7 @@ export default function NewsScreen() {
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
             <View>
-              {/* <Text style={styles.greeting}>您好！</Text> */}
-              <Text style={styles.welcomeText}>健康咨询</Text>
+              <Text style={styles.welcomeText}>健康资讯</Text>
             </View>
             <TouchableOpacity style={styles.notificationButton}>
               <MaterialIcons name="notifications" size={24} color="#FFFFFF" />
@@ -62,7 +63,7 @@ export default function NewsScreen() {
             <TouchableOpacity style={styles.searchBar}>
               <Search size={20} color={COLORS.gray} />
               <Text style={styles.searchText}>
-                Search articles...
+                搜索文章...
               </Text>
             </TouchableOpacity>
           </View>
@@ -96,14 +97,14 @@ export default function NewsScreen() {
           </View>
         </View>
       </LinearGradient>
-      {/* <SafeAreaView style={styles.safeArea}> */}
+
       <ScrollView
         style={styles.container}
         showsVerticalScrollIndicator={false}
       >
         {featuredArticle && (
           <View style={styles.featuredSection}>
-            <Text style={styles.sectionTitle}>Featured Article</Text>
+            <Text style={styles.sectionTitle}>精选文章</Text>
             <TouchableOpacity
               style={styles.featuredCard}
               onPress={() => router.push({
@@ -126,7 +127,7 @@ export default function NewsScreen() {
                     {featuredArticle.title}
                   </Text>
                   <Text style={styles.featuredMeta}>
-                    {format(new Date(featuredArticle.publishedAt), 'MMM d, yyyy')} · {featuredArticle.readTime} min read
+                    {format(new Date(featuredArticle.publishedAt), 'MMM d, yyyy')} · {featuredArticle.readTime} 分钟阅读
                   </Text>
                 </View>
               </View>
@@ -135,19 +136,15 @@ export default function NewsScreen() {
         )}
 
         <View style={styles.latestSection}>
-          <Text style={styles.sectionTitle}>Latest Articles</Text>
+          <Text style={styles.sectionTitle}>最新文章</Text>
           {filteredArticles.map((article) => (
             <NewsCard key={article.id} article={article} />
           ))}
         </View>
       </ScrollView>
-      {/* </SafeAreaView> */}
     </>
   );
 }
-
-import { format } from 'date-fns';
-import { Image } from 'react-native';
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -158,13 +155,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  // header: {
-  //   flexDirection: 'row',
-  //   justifyContent: 'space-between',
-  //   alignItems: 'center',
-  //   marginTop: 8,
-  //   marginBottom: 16,
-  // },
   title: {
     fontFamily: FONTS.poppinsSemiBold,
     fontSize: 24,
@@ -254,13 +244,10 @@ const styles = StyleSheet.create({
     right: 0,
     height: '70%',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    // backgroundGradient: 'linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent)',
     justifyContent: 'flex-end',
     padding: 16,
   },
-  featuredContent: {
-
-  },
+  featuredContent: {},
   featuredCategory: {
     fontFamily: FONTS.interSemiBold,
     fontSize: 14,
@@ -290,8 +277,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 24,
     paddingHorizontal: 20,
-
-
   },
   headerContent: {
     flex: 0,
@@ -301,11 +286,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 20,
-  },
-  greeting: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    opacity: 0.9,
   },
   welcomeText: {
     fontSize: 24,
