@@ -256,23 +256,22 @@ const HomeScreen = () => {
             <MaterialIcons name="recommend" size={24} color="#2E7D5A" />
             <Text style={styles.sectionTitle}>推荐服务</Text>
           </View>
-          {Object.entries(categories)
-            .filter(([catKey]) => selectedCategory === '全部' || selectedCategory === catKey)
-            .flatMap(([catKey, illnesses]) => 
-              Object.entries(illnesses).map(([illnessName, data]) => (
-                <TouchableOpacity key={`${catKey}-${illnessName}`}>
-                  <CategoryCard
-                    illnessName={illnessName}
-                    data={data}
-                    onPress={() => {
-                      console.log('Pressed CategoryCard: navigating & setting category');
-                      setSelectedCategory(catKey);
-                      navigation.navigate('applyhome/Detail', { catKey, illnessName, data });
-                    }}
-                  />
-                </TouchableOpacity>
-              ))
-            )}
+                {Object.entries(categories)
+                  .filter(([catKey]) => selectedCategory === '全部' || selectedCategory === catKey)
+                  .flatMap(([catKey, illnesses]) => 
+                    Object.entries(illnesses).map(([illnessName, data]) => (
+                      <CategoryCard
+                        key={`${catKey}-${illnessName}`}
+                        illnessName={illnessName}
+                        data={data}
+                        onBookPress={() => {
+                          console.log('Pressed Book Button: navigating & setting category');
+                          setSelectedCategory(catKey);
+                          navigation.navigate('applyhome/Detail', { catKey, illnessName, data });
+                        }}
+                      />
+                    ))
+                  )}
         </View>
 
         {/* Bottom spacing */}
