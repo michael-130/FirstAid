@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Button, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert, ScrollView, Animated } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '@/data/care_order/types_home';
 import { ref, set } from 'firebase/database';
 import { db } from '@/firebase';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { migrateGuestDataToUser } from '@/data/care_order/migrateguestdata';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously } from 'firebase/auth';
 import { DatePickerModal, TimePickerModal } from 'react-native-paper-dates';
-import { getCurrentUserId } from '@/data/care_order/getcurrentid'; // import helper
+import { getCurrentUserId } from '@/data/care_order/getcurrentid';
+import LottieView from 'lottie-react-native';
+
 type DetailRouteProp = RouteProp<RootStackParamList, 'applyhome/Detail'>;
 
 export default function DetailScreen() {
@@ -22,160 +20,186 @@ export default function DetailScreen() {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  
-const handleLoginAndMigrate = async () => {
-const auth = getAuth();
-const user = auth.currentUser;
-  if (!user) {
-    alert('🔐 Please log in first.');
-    
-    return;
-  }
 
-  await migrateGuestDataToUser(user.uid);
-  alert(`✅ Migrated guest data to ${user.uid}`);
-};
-  // 👇 Load local guest or logged-in userId
-useEffect(() => {
-  const getUser = async () => {
-    const id = await getCurrentUserId();
-    setUserId(id);
+  // Animations
+  const [cardAnim] = useState(new Animated.Value(0));
+  const [successAnim] = useState(new Animated.Value(0));
+  const [showLottie, setShowLottie] = useState(false);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const id = await getCurrentUserId();
+      setUserId(id);
+    };
+    getUser();
+
+    // Animate card on mount
+    Animated.timing(cardAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const showSuccessBanner = () => {
+    setShowLottie(true);
+    Animated.timing(successAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start(() => {
+      setTimeout(() => {
+        Animated.timing(successAnim, { toValue: 0, duration: 500, useNativeDriver: true }).start(() => {
+          setShowLottie(false);
+        });
+      }, 2000);
+    });
   };
-  getUser();
-}, []);
 
   const onDismissDatePicker = () => setDatePickerVisible(false);
-
-  const onConfirmDate = (params: { date?: Date }) => {
-    if (params.date) {
-      setSelectedDate(params.date);
+  const onConfirmDate = ({ date }: { date?: Date }) => {
+    if (date) {
+      setSelectedDate(date);
       setDatePickerVisible(false);
       setTimePickerVisible(true);
-    } else {
-      setDatePickerVisible(false);
-    }
+    } else setDatePickerVisible(false);
   };
-
   const onDismissTimePicker = () => setTimePickerVisible(false);
-
-  const onConfirmTime = (params: { hours: number; minutes: number }) => {
+  const onConfirmTime = ({ hours, minutes }: { hours: number; minutes: number }) => {
     if (selectedDate) {
       const updatedDate = new Date(selectedDate);
-      updatedDate.setHours(params.hours);
-      updatedDate.setMinutes(params.minutes);
+      updatedDate.setHours(hours);
+      updatedDate.setMinutes(minutes);
       setSelectedDate(updatedDate);
     }
     setTimePickerVisible(false);
   };
 
   const handleSubmit = async () => {
-    if (!selectedDate) {
-      alert('Please pick a date and time.');
-      return;
-    }
+    if (!selectedDate) return Alert.alert('Pick a date and time.');
+    if (!userId) return Alert.alert('User ID not found.');
 
-    if (!userId) {
-      alert('User ID not found. Please try again.');
-      return;
-    }
+    const appointmentRef = ref(db, `users/${userId}/appointment/${catKey}/${illnessName}`);
+    await set(appointmentRef, { appointment: true, time: selectedDate.toISOString() });
 
-    const appointmentRef = ref(
-      db,
-      `users/${userId}/appointment/${catKey}/${illnessName}`
-    );
-
-    await set(appointmentRef, {
-      appointment: true,
-      time: selectedDate.toISOString(),
-    });
-
-    navigation.goBack();
+    showSuccessBanner();
+    setTimeout(() => navigation.goBack(), 2200);
   };
 
-const handleAnonymousLogin = async () => {
-  try {
-    const auth = getAuth();
-    const userCredential = await signInAnonymously(auth);
-    console.log('✅ Anonymous user signed in:', userCredential.user.uid);
-    alert(`Logged in as anonymous user: ${userCredential.user.uid}`);
-  } catch (error) {
-    console.error('❌ Anonymous login failed:', error);
-  }
-};
-return (
-  <View style={styles.container}>
-    <Text style={styles.title}>{illnessName}</Text>
-    <Text>{data.address}</Text>
-    <Text>{data.description}</Text>
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+      <Text style={styles.title}>{illnessName}</Text>
 
-    <Button title="Pick Appointment Date" onPress={() => setDatePickerVisible(true)} />
+      {/* Animated Card */}
+      <Animated.View
+        style={[
+          styles.card,
+          {
+            opacity: cardAnim,
+            transform: [
+              {
+                translateY: cardAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }),
+              },
+            ],
+          },
+        ]}
+      >
+        <Text style={styles.cardTitle}>Address</Text>
+        <Text style={styles.cardText}>{data.address}</Text>
+        <Text style={styles.cardTitle}>Description</Text>
+        <Text style={styles.cardText}>{data.description}</Text>
+      </Animated.View>
 
-    {selectedDate && (
-      <Text style={styles.selected}>Selected: {selectedDate.toLocaleString()}</Text>
-    )}
+      {/* Animated Button */}
+      <Pressable
+        style={({ pressed }) => [styles.button, { transform: [{ scale: pressed ? 0.95 : 1 }] }]}
+        onPress={() => setDatePickerVisible(true)}
+      >
+        <Text style={styles.buttonText}>Pick Appointment Date</Text>
+      </Pressable>
 
-    <Button title="Confirm Appointment" onPress={handleSubmit} />
+      {/* Selected Date/Time Animated */}
+      {selectedDate && (
+        <Animated.View
+          style={{
+            marginVertical: 12,
+            opacity: successAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1] }),
+            transform: [
+              { translateY: successAnim.interpolate({ inputRange: [0, 1], outputRange: [-10, 0] }) },
+            ],
+          }}
+        >
+          <Text style={styles.selected}>Selected: {selectedDate.toLocaleString()}</Text>
+        </Animated.View>
+      )}
 
-    {/* 🧪 Test migration manually */}
-    <Button title="Login and Migrate Guest Data" onPress={handleLoginAndMigrate} />
-<Button title="Login Anonymously" onPress={handleAnonymousLogin} />
-<Button
-  title="Migrate Guest Data"
-  onPress={async () => {
-    const currentUser = getAuth().currentUser;
-    if (!currentUser) {
-      Alert.alert('Error', 'Please log in first.');
-      console.log('🚫 Migration failed: No logged-in user');
-      return;
-    }
+      <Pressable
+        style={({ pressed }) => [styles.submitButton, { transform: [{ scale: pressed ? 0.95 : 1 }] }]}
+        onPress={handleSubmit}
+      >
+        <Text style={styles.buttonText}>Confirm Appointment</Text>
+      </Pressable>
 
-    try {
-      console.log('🔄 Attempting migration for user:', currentUser.uid);
-      await migrateGuestDataToUser(currentUser.uid);
-      Alert.alert('Success', 'Guest data migrated to your user account!');
-      console.log('🎉 Migration successful');
-    } catch (error) {
-      Alert.alert('Error', `Failed to migrate guest data: ${error.message}`);
-      console.error('❌ Migration error:', error);
-    }
-  }}
-/>
+      {/* Success Banner */}
+      <Animated.View
+        style={[
+          styles.successBanner,
+          { opacity: successAnim, transform: [{ translateY: successAnim.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }] },
+        ]}
+      >
+        <Text style={styles.successText}>✅ Appointment Set!</Text>
+      </Animated.View>
 
-    <DatePickerModal
-      mode="single"
-      visible={datePickerVisible}
-      onDismiss={onDismissDatePicker}
-      date={selectedDate ?? new Date()}
-      onConfirm={onConfirmDate}
-      locale="en"
-    />
+      {/* Lottie Animation */}
+      {showLottie && (
+        <LottieView
+          source={require('@/assets/animations/Lottie Lego.json')}
+          autoPlay
+          loop={false}
+          style={{ width: 150, height: 150, alignSelf: 'center', marginTop: 20 }}
+        />
+      )}
 
-    <TimePickerModal
-      visible={timePickerVisible}
-      onDismiss={onDismissTimePicker}
-      onConfirm={onConfirmTime}
-      hours={selectedDate?.getHours() ?? 0}
-      minutes={selectedDate?.getMinutes() ?? 0}
-    />
-  </View>
-);
+      <DatePickerModal
+        mode="single"
+        visible={datePickerVisible}
+        onDismiss={onDismissDatePicker}
+        date={selectedDate ?? new Date()}
+        onConfirm={onConfirmDate}
+        locale="en"
+      />
 
+      <TimePickerModal
+        visible={timePickerVisible}
+        onDismiss={onDismissTimePicker}
+        onConfirm={onConfirmTime}
+        hours={selectedDate?.getHours() ?? 0}
+        minutes={selectedDate?.getMinutes() ?? 0}
+      />
+    </ScrollView>
+  );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 24,
-    flex: 1,
+  container: { flex: 1, backgroundColor: '#f9f9f9', padding: 20 },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 20 },
+  card: {
     backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 5,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  selected: {
-    fontSize: 16,
-    color: 'green',
-    marginVertical: 12,
-  },
+  cardTitle: { fontWeight: '600', marginTop: 10, fontSize: 16 },
+  cardText: { fontSize: 14, color: '#555', marginTop: 4 },
+  button: { backgroundColor: '#6C63FF', borderRadius: 12, padding: 15, alignItems: 'center', marginBottom: 15 },
+  submitButton: { backgroundColor: '#34C759', borderRadius: 12, padding: 15, alignItems: 'center', marginTop: 10 },
+  buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+  selected: { fontSize: 16, color: 'green' },
+  successBanner: { position: 'absolute', top: 50, left: 20, right: 20, backgroundColor: '#34C759', padding: 15, borderRadius: 12, alignItems: 'center' },
+  successText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
 });
