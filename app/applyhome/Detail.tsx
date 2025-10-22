@@ -153,7 +153,7 @@ export default function DetailScreen() {
       {/* Lottie Animation */}
       {showLottie && (
         <LottieView
-          source={require('@/assets/animations/Lottie Lego.json')}
+          source={require('@/assets/Lottie Lego.json')}
           autoPlay
           loop={false}
           style={{ width: 150, height: 150, alignSelf: 'center', marginTop: 20 }}
