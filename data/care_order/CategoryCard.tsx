@@ -12,16 +12,15 @@ type CategoryCardProps = {
   illnessName: string;
   data: SicknessInfo;
   onPress?: () => void;
+  onBookPress?: () => void; // 🔹 add this line
 };
 
-const CategoryCard: React.FC<CategoryCardProps> = ({ illnessName, data, onPress }) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({ illnessName, data, onBookPress }) => {
   const [expanded, setExpanded] = useState(false);
 
   const handlePress = () => {
     setExpanded(!expanded);
-    if (onPress) onPress();
   };
-
   const getServiceIcon = (illnessName: string) => {
     if (illnessName.includes('老年') || illnessName.includes('阿尔茨海默')) return 'elderly';
     if (illnessName.includes('康复')) return 'healing';
@@ -83,7 +82,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ illnessName, data, onPress 
               <MaterialIcons name="chat" size={18} color="#2E7D5A" />
               <Text style={styles.consultText}>在线咨询</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.bookButton}>
+            <TouchableOpacity style={styles.bookButton} onPress={onBookPress}>
               <MaterialIcons name="event" size={18} color="#FFFFFF" />
               <Text style={styles.bookText}>立即预约</Text>
             </TouchableOpacity>
