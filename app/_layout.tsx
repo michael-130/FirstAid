@@ -29,7 +29,7 @@ export default function RootLayout() {
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
-            <Stack.Screen name="cart_and_order_page/order" options={{ title: "Order" }} />
+            <Stack.Screen name="cart_and_order_page/order" options={{ title: "Order",headerShown: false }} />
             <Stack.Screen name="auth/login" options={{
               headerTransparent: true,
               headerTitle: '',
@@ -37,8 +37,11 @@ export default function RootLayout() {
               headerStyle: {
                 backgroundColor: 'transparent',
               },
+              headerShown: false
             }} />
-            <Stack.Screen name="applyhome/Detail" /> {/* Just name, no component */}
+          <Stack.Screen name="applyhome/Detail"   options={{title: "Appointment Detail", headerShown: true,           // show/hide header if needed
+  }}
+/>
           </Stack>
         </AppProvider>
         <StatusBar style="dark" />
